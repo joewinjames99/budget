@@ -309,12 +309,12 @@ def detect_subscriptions(df_all):
 # THEME MANAGEMENT
 # ============================================================
 DEFAULT_THEME = {
-    "bg_primary": "#0f172a",
-    "bg_secondary": "#1e293b",
-    "text_primary": "#f1f5f9",
-    "text_secondary": "#cbd5e1",
-    "accent": "#3b82f6",
-    "accent_dark": "#1e40af",
+    "bg_primary": "#fdf2f8",
+    "bg_secondary": "#fce7f3",
+    "text_primary": "#be185d",
+    "text_secondary": "#9f1239",
+    "accent": "#ec4899",
+    "accent_dark": "#be185d",
 }
 
 def load_theme() -> dict:
@@ -331,12 +331,12 @@ def save_theme(theme: dict) -> None:
 
 def apply_theme(theme: dict):
     """Apply theme colors to the app dynamically"""
-    bg_primary = theme.get("bg_primary", "#0f172a")
-    bg_secondary = theme.get("bg_secondary", "#1e293b")
-    text_primary = theme.get("text_primary", "#f1f5f9")
-    text_secondary = theme.get("text_secondary", "#cbd5e1")
-    accent = theme.get("accent", "#3b82f6")
-    accent_dark = theme.get("accent_dark", "#1e40af")
+    bg_primary = theme.get("bg_primary", "#fdf2f8")
+    bg_secondary = theme.get("bg_secondary", "#fce7f3")
+    text_primary = theme.get("text_primary", "#be185d")
+    text_secondary = theme.get("text_secondary", "#9f1239")
+    accent = theme.get("accent", "#ec4899")
+    accent_dark = theme.get("accent_dark", "#be185d")
     
     st.markdown(f"""
     <style>
@@ -346,7 +346,7 @@ def apply_theme(theme: dict):
     }}
     
     [data-testid="stSidebar"] {{
-        background: linear-gradient(180deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.95) 100%);
+        background: linear-gradient(180deg, rgba(253, 242, 248, 0.95) 0%, rgba(252, 231, 243, 0.95) 100%);
     }}
     
     h1, h2, h3 {{ 
@@ -354,8 +354,13 @@ def apply_theme(theme: dict):
     }}
     
     .card {{
-        border-color: rgba(59, 130, 246, 0.15);
-        background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(51, 65, 85, 0.6) 100%);
+        border: 1px solid rgba(236, 72, 153, 0.2);
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(252, 231, 243, 0.8) 100%);
+    }}
+    
+    .card:hover {{
+        border-color: rgba(236, 72, 153, 0.4);
+        box-shadow: 0 15px 40px rgba(236, 72, 153, 0.15);
     }}
     
     .kpi-label {{ 
@@ -376,6 +381,30 @@ def apply_theme(theme: dict):
     
     .stButton > button {{
         background: linear-gradient(135deg, {accent} 0%, {accent_dark} 100%) !important;
+        border-color: rgba(236, 72, 153, 0.3) !important;
+        box-shadow: 0 4px 12px rgba(236, 72, 153, 0.25) !important;
+    }}
+    
+    .stButton > button:hover {{
+        box-shadow: 0 6px 20px rgba(236, 72, 153, 0.35) !important;
+    }}
+    
+    [data-baseweb="input"] > div, [data-baseweb="select"] > div {{
+        border-radius: 8px !important;
+        background-color: rgba(255, 255, 255, 0.85) !important;
+        border-color: rgba(236, 72, 153, 0.15) !important;
+    }}
+    
+    [data-baseweb="input"] input, [data-baseweb="select"] div {{
+        color: {text_primary} !important;
+    }}
+    
+    .progress-fill {{
+        background: linear-gradient(90deg, {accent}, {accent_dark});
+    }}
+    
+    hr {{ 
+        background: linear-gradient(90deg, transparent, rgba(236, 72, 153, 0.2), transparent);
     }}
     </style>
     """, unsafe_allow_html=True)
@@ -579,20 +608,20 @@ with st.sidebar:
         col_a, col_b = st.columns(2)
         with col_a:
             st.markdown("**Background**")
-            bg_primary = st.color_picker("Primary BG", theme.get("bg_primary", "#0f172a"), key="bg_primary")
-            bg_secondary = st.color_picker("Secondary BG", theme.get("bg_secondary", "#1e293b"), key="bg_secondary")
+            bg_primary = st.color_picker("Primary BG", theme.get("bg_primary", "#fdf2f8"), key="bg_primary")
+            bg_secondary = st.color_picker("Secondary BG", theme.get("bg_secondary", "#fce7f3"), key="bg_secondary")
         
         with col_b:
             st.markdown("**Text**")
-            text_primary = st.color_picker("Primary Text", theme.get("text_primary", "#f1f5f9"), key="text_primary")
-            text_secondary = st.color_picker("Secondary Text", theme.get("text_secondary", "#cbd5e1"), key="text_secondary")
+            text_primary = st.color_picker("Primary Text", theme.get("text_primary", "#be185d"), key="text_primary")
+            text_secondary = st.color_picker("Secondary Text", theme.get("text_secondary", "#9f1239"), key="text_secondary")
         
         st.markdown("**Accent**")
         col_c, col_d = st.columns(2)
         with col_c:
-            accent = st.color_picker("Accent Color", theme.get("accent", "#3b82f6"), key="accent")
+            accent = st.color_picker("Accent Color", theme.get("accent", "#ec4899"), key="accent")
         with col_d:
-            accent_dark = st.color_picker("Accent Dark", theme.get("accent_dark", "#1e40af"), key="accent_dark")
+            accent_dark = st.color_picker("Accent Dark", theme.get("accent_dark", "#be185d"), key="accent_dark")
         
         if st.button("💾 Save Theme", use_container_width=True):
             new_theme = {
