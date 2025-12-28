@@ -28,6 +28,7 @@ DATA_DIR.mkdir(exist_ok=True)
 TX_FILE = DATA_DIR / "transactions.json"
 BUDGETS_FILE = DATA_DIR / "budgets.json"
 GOALS_FILE = DATA_DIR / "goals.json"
+THEME_FILE = DATA_DIR / "theme.json"
 
 SHEET_2025_TAB = "2025"
 TX_TAB = "Transactions"
@@ -305,6 +306,81 @@ def detect_subscriptions(df_all):
     return sorted(subs, key=lambda x: x["months"], reverse=True)
 
 # ============================================================
+# THEME MANAGEMENT
+# ============================================================
+DEFAULT_THEME = {
+    "bg_primary": "#0f172a",
+    "bg_secondary": "#1e293b",
+    "text_primary": "#f1f5f9",
+    "text_secondary": "#cbd5e1",
+    "accent": "#3b82f6",
+    "accent_dark": "#1e40af",
+}
+
+def load_theme() -> dict:
+    if THEME_FILE.exists():
+        try:
+            return json.loads(THEME_FILE.read_text())
+        except:
+            return DEFAULT_THEME.copy()
+    return DEFAULT_THEME.copy()
+
+def save_theme(theme: dict) -> None:
+    with open(THEME_FILE, "w") as f:
+        json.dump(theme, f, indent=2)
+
+def apply_theme(theme: dict):
+    """Apply theme colors to the app dynamically"""
+    bg_primary = theme.get("bg_primary", "#0f172a")
+    bg_secondary = theme.get("bg_secondary", "#1e293b")
+    text_primary = theme.get("text_primary", "#f1f5f9")
+    text_secondary = theme.get("text_secondary", "#cbd5e1")
+    accent = theme.get("accent", "#3b82f6")
+    accent_dark = theme.get("accent_dark", "#1e40af")
+    
+    st.markdown(f"""
+    <style>
+    [data-testid="stAppViewContainer"] {{
+        background: linear-gradient(135deg, {bg_primary} 0%, {bg_secondary} 50%, {bg_primary} 100%);
+        color: {text_primary};
+    }}
+    
+    [data-testid="stSidebar"] {{
+        background: linear-gradient(180deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.95) 100%);
+    }}
+    
+    h1, h2, h3 {{ 
+        color: {text_primary};
+    }}
+    
+    .card {{
+        border-color: rgba(59, 130, 246, 0.15);
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(51, 65, 85, 0.6) 100%);
+    }}
+    
+    .kpi-label {{ 
+        color: {text_secondary};
+    }}
+    
+    .kpi-value {{ 
+        color: {text_primary};
+    }}
+    
+    .kpi-sub {{ 
+        color: {text_secondary};
+    }}
+    
+    .section-title {{
+        color: {text_primary};
+    }}
+    
+    .stButton > button {{
+        background: linear-gradient(135deg, {accent} 0%, {accent_dark} 100%) !important;
+    }}
+    </style>
+    """, unsafe_allow_html=True)
+
+# ============================================================
 # GOOGLE SHEETS & DATA
 # ============================================================
 @st.cache_resource
@@ -463,7 +539,11 @@ def add_transaction(df: pd.DataFrame, row: dict) -> pd.DataFrame:
 st.session_state.setdefault("tx_df", load_transactions())
 st.session_state.setdefault("budgets", load_budgets())
 st.session_state.setdefault("goals", load_goals())
+st.session_state.setdefault("theme", load_theme())
 df_all = st.session_state["tx_df"].copy()
+
+# Apply theme
+apply_theme(st.session_state["theme"])
 
 today = date.today()
 months = sorted({month_key(d) for d in df_all["Date"].dropna().tolist() if pd.notna(d)})
@@ -488,6 +568,49 @@ with st.sidebar:
         st.cache_data.clear()
         st.session_state["tx_df"] = load_transactions()
         st.rerun()
+    
+    st.markdown("<hr style='margin: 1rem 0;'>", unsafe_allow_html=True)
+    
+    with st.expander("⚙️ Settings"):
+        st.markdown("#### 🎨 Theme Colors")
+        
+        theme = st.session_state["theme"]
+        
+        col_a, col_b = st.columns(2)
+        with col_a:
+            st.markdown("**Background**")
+            bg_primary = st.color_picker("Primary BG", theme.get("bg_primary", "#0f172a"), key="bg_primary")
+            bg_secondary = st.color_picker("Secondary BG", theme.get("bg_secondary", "#1e293b"), key="bg_secondary")
+        
+        with col_b:
+            st.markdown("**Text**")
+            text_primary = st.color_picker("Primary Text", theme.get("text_primary", "#f1f5f9"), key="text_primary")
+            text_secondary = st.color_picker("Secondary Text", theme.get("text_secondary", "#cbd5e1"), key="text_secondary")
+        
+        st.markdown("**Accent**")
+        col_c, col_d = st.columns(2)
+        with col_c:
+            accent = st.color_picker("Accent Color", theme.get("accent", "#3b82f6"), key="accent")
+        with col_d:
+            accent_dark = st.color_picker("Accent Dark", theme.get("accent_dark", "#1e40af"), key="accent_dark")
+        
+        if st.button("💾 Save Theme", use_container_width=True):
+            new_theme = {
+                "bg_primary": bg_primary,
+                "bg_secondary": bg_secondary,
+                "text_primary": text_primary,
+                "text_secondary": text_secondary,
+                "accent": accent,
+                "accent_dark": accent_dark,
+            }
+            save_theme(new_theme)
+            st.session_state["theme"] = new_theme
+            st.success("Theme saved! Refresh to apply.")
+        
+        if st.button("🔄 Reset to Default", use_container_width=True):
+            save_theme(DEFAULT_THEME.copy())
+            st.session_state["theme"] = DEFAULT_THEME.copy()
+            st.success("Theme reset!")
 
 # Get month data
 df_month = df_all[df_all["Date"].apply(lambda d: month_key(d) == sel_month if pd.notna(d) else False)].copy()
